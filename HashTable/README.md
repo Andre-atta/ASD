@@ -264,34 +264,6 @@ Struttura interna:
 
 ---
 
-## Considerazioni di Design per l'Implementazione
-
-### 1. Scelta della Funzione Hash Primaria
-
-- Usare `h'(k) = k mod m` per tutti i metodi?
-- Se sì, **m deve essere primo** (specialmente critico per Open Addressing)
-- Motivo: Assicura migliore distribuzione e compatibilità con doppio hashing
-
-### 2. Per Ispezione Quadratica
-
-- Quali valori per le costanti c₁ e c₂?
-- Suggerimento: c₁ = 1, c₂ = 1 (semplice e funziona bene)
-- Alternativa: c₁ = 1/2, c₂ = 1/2
-
-### 3. Per Doppio Hashing
-
-- Come garantire che h₂(k) e m siano coprimi?
-- Suggerimento: h₂(k) = 1 + (k mod (m-1)) quando m è primo
-- Questo assicura che il passo non è mai 0 e copre tutta la tabella
-
-### 4. Fattore di Carico α
-
-- Durante i test, mantenere α costante per confronti equi
-- Suggerimento: testare con α = 0.5, 0.75, 0.9
-- Quando α raggiunge una soglia (es. 0.75), ridimensionare la tabella
-
----
-
 ## Schema di Test Suggerito
 
 **Obiettivo:** Confrontare i tempi di esecuzione delle quattro implementazioni
@@ -310,6 +282,10 @@ Struttura interna:
 - Numero di collisioni
 
 **Risultati attesi:**
+
+- Durante i test, mantenere α costante per confronti equi
+- Suggerimento: testare con α = 0.5, 0.75, 0.9
+- Quando α raggiunge una soglia (es. 0.75), ridimensionare la tabella
 - Chaining: Costante O(1) indipendentemente da α
 - Lineare: Migliore di Chaining con basso α, peggiore con alto α
 - Quadratica: Migliore di Lineare, peggiore di Doppio Hashing

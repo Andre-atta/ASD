@@ -32,12 +32,15 @@ using namespace std;
  * - Costo operazione: O(n), ma ammortizzato su più inserimenti → O(1) ammortizzato
  *
  */
-class myMapChaining {
-    struct Node {
+class myMapChaining
+{
+    struct Node
+    {
         int key;
         int val;
         Node* next;
     };
+
     typedef Node* PNode;
 
     vector<PNode> map; // sfrutto la key e la hash function per capire in che indice posizionare i nodi
@@ -55,8 +58,9 @@ class myMapChaining {
     static void destroy_table(PNode head)
     {
         if (!head) return;
-        while (head) {
-            auto tmp {head};
+        while (head)
+        {
+            auto tmp{head};
             head = head->next;
             delete tmp;
         }
@@ -69,6 +73,7 @@ public:
         this->n = 0;
         map.resize(m, nullptr);
     }
+
     ~myMapChaining()
     {
         for (auto e : map)
@@ -84,8 +89,10 @@ public:
 
         // Controlla se chiave esiste già -> aggiorno il valore e esco
         PNode current = map.at(index);
-        while (current) {
-            if (current->key == key) {
+        while (current)
+        {
+            if (current->key == key)
+            {
                 current->val = val;
                 return;
             }
@@ -136,7 +143,8 @@ public:
         auto pc = map.at(index);
 
         // Caso 1: Il primo nodo è quello da rimuovere
-        if (pc && pc->key == key) {
+        if (pc && pc->key == key)
+        {
             map.at(index) = pc->next;
             delete pc;
             n--;
@@ -144,8 +152,10 @@ public:
         }
 
         // Caso 2: Scorrere la lista per trovare il precedente
-        while (pc && pc->next) {
-            if (pc->next->key == key) {
+        while (pc && pc->next)
+        {
+            if (pc->next->key == key)
+            {
                 auto temp = pc->next;
                 pc->next = pc->next->next;
                 delete temp;
@@ -164,25 +174,31 @@ public:
         cout << "| Index | Nodi | Contenuto                            |\n";
         cout << "+-------+------+--------------------------------------+\n";
 
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < m; i++)
+        {
             int nodeCount = 0;
             PNode temp = map[i];
-            while (temp) {
+            while (temp)
+            {
                 nodeCount++;
                 temp = temp->next;
             }
 
             // Formattazione indice
             cout << "|   " << (i < 10 ? " " : "") << i << "   |  "
-                 << nodeCount << "   | ";
+                << nodeCount << "   | ";
 
             // Stampa i nodi nella lista
-            if (map[i] == nullptr) {
+            if (map[i] == nullptr)
+            {
                 cout << "[VUOTO]";
-            } else {
+            }
+            else
+            {
                 PNode current = map[i];
                 bool first = true;
-                while (current) {
+                while (current)
+                {
                     if (!first) cout << " -> ";
                     cout << "[" << current->key << ":" << current->val << "]";
                     current = current->next;
@@ -194,15 +210,19 @@ public:
 
         cout << "+-------+------+--------------------------------------+\n";
         cout << "| Stats | n=" << n << " m=" << m
-             << " alpha=" << (double)n/m << "                    |\n";
+            << " alpha=" << (double)n / m << "                    |\n";
         cout << "+=======================================================+\n\n";
     }
+
     void printSearchResult(int key)
     {
         PNode result = search(key);
-        if (result) {
+        if (result)
+        {
             cout << "[FOUND] Chiave " << key << " trovata -> Valore: " << result->val << "\n";
-        } else {
+        }
+        else
+        {
             cout << "[NOT FOUND] Chiave " << key << " NON trovata\n";
         }
     }
@@ -328,17 +348,147 @@ void myMapChainingTest()
     cout << "  Dimensione tabella (m): " << hashTable.getM() << "\n";
     cout << "  Fattore di carico (alpha = n/m): " << (double)hashTable.getN() / hashTable.getM() << "\n";
     cout << "  Complessita media ricerca: O(1 + alpha) = O("
-         << (1.0 + (double)hashTable.getN() / hashTable.getM()) << ")\n\n";
+        << (1.0 + (double)hashTable.getN() / hashTable.getM()) << ")\n\n";
 
     cout << "=====================================================================\n";
     cout << "                        TEST COMPLETATO                         \n";
     cout << "=====================================================================\n\n";
-
 }
 
+/** ! Classe 2: Open Addressing con ispezione lineare
+ *
+ * ricordiamo α = n/m (fattore di carico, con n elementi inseriti e m celle)
+ *
+ * HASH FUNCTIONS:
+ * - h(k, i) = (h'(k) + i) % m   con h'(k) = k % m
+ * - se la cella è occupata, si incrementa i e si ricalcola la posizione
+ *
+ * FATTORE DI CARICO:
+ * - Ricerca media: O(1/(1-α))
+ * - α deve rimanere < 1 (idealmente < 0.7)
+ *
+ * ISPEZIONE LINEARE (gestione collisioni):
+ * - se la cella è occupata, ispeziono linearmente la prossima -> i+1
+ * - soffre di addensamento primario: lunghe sequenze di celle adiacenti
+ *
+ * CANCELLAZIONE:
+ * - NON si svuota la cella, si marca con deleted = true
+ * - altrimenti si interromperebbe la catena di ispezione per le ricerche future
+ */
+class myMapOpenLinear
+{
+    struct Entry
+    {
+        int key;
+        int val;
+        bool occupied;
+        bool deleted;
+    };
+
+    vector<Entry> map;
+    int m;
+    int n;
+
+    // consideriamo il numero di miss fatti
+    int hashFun(int key, int i)
+    {
+        return (hashFunPrimary(key) + i) % m;
+    }
+    int hashFunPrimary(int key) const
+    {
+        return key % m; // funzione hash primaria h'(k)
+    }
+
+public:
+    myMapOpenLinear(int m)
+    {
+        this->m = m;
+        this->n = 0;
+        map.resize(m);
+    }
+    ~myMapOpenLinear() = default;
 
 
-int main ()
+    // TODO comlessità
+    void insert(int key, int val)
+    {
+        int i{0}, miss{0};
+        bool find{false};
+
+        do
+        {
+            int index{hashFun(key, i)};
+            if (!map.at(index).occupied || map.at(index).deleted) {
+                map.at(index) = {key, val, true, false};
+                n++;
+                cout << "  [INSERTED] key=" << key << " at index " << index
+                     << " (collisioni: " << miss << ")\n";
+                find = true;
+            } else if (map[index].key == key && !map[index].deleted) {
+                map[index].val = val;
+                cout << "  [UPDATED] key=" << key << " (già esistente)\n";
+                find = true;
+            } else {
+                miss++;
+                i++;
+            }
+        }
+        while (!find && i < m);
+
+        if (!find) cout << "  [ERROR] Tabella piena! Impossibile inserire key=" << key << "\n";
+    }
+
+    Entry search(int key)
+    {
+        int i{0}, miss{0};
+
+        do {
+            int index{hashFun(key, i)};
+
+            if (!map[index].occupied) {
+                cout << "  [NOT FOUND] Chiave " << key << " non trovata\n";
+                return Entry{-1, -1, false, false};
+            }
+
+            if (map[index].key == key && !map[index].deleted) {
+                cout << "  [FOUND] Chiave " << key << " trovata (miss: " << miss << ")\n";
+                return map[index];
+            }
+
+            miss++;
+            i++;
+
+        } while (i < m);
+
+        cout << "  [NOT FOUND] Chiave " << key << " non trovata (tabella esplorata)\n";
+        return Entry{-1, -1, false, false};
+    }
+
+    void remove(int key)
+    {
+        int i{0}, miss{0};
+        bool removed{false};
+        do
+        {
+            int index {hashFun(key, i)};
+            if (map[index].key == key && !map[index].deleted) {
+                cout << "  [FOUND] Chiave " << key << " trovata (miss: " << miss << ")\n";
+                map.at(index).deleted = true;
+                n--;
+                removed = true;
+            }
+
+            miss++;
+            i++;
+
+        } while (i < m && !removed);
+
+        cout << "  [NOT FOUND] Chiave " << key << " non trovata (tabella esplorata)\n";
+    }
+};
+
+
+int main()
 {
     myMapChainingTest();
     return 0;
