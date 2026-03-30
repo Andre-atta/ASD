@@ -91,3 +91,26 @@ sono un caso speciale degli alberi k-ari dove k = 2 <br>
 - definiamo albero completo un albero k-ario dove vale che
   - tutte le foglie hanno la stessa profondità
   - tutti i nodi interni hanno grado k (esattamente k figli)
+
+---
+# Algoritmi di visita
+Gli algoritmi di visita permettono di esplorare l'albero.
+Il tempo di esecuzione per la visita dell'intero albero è O(n) poiché ogni nodo viene visitato una sola volta
+
+Tra gli algoritmi di visita ne evidenziamo due tipologie
+### [DFS](algoritmiDiVista.h) (Depth-First Search - Visita in profondità): 
+- Esplora i rami il più in profondità possibile prima di tornare indietro. Può essere implementata con una struttura dati Stack (politica LIFO) o tramite ricorsione
+![](images/vistaDFS.png)
+
+Per questa tipologia di vista abbiamo tre tipo di visite ricorsive:
+1. Pre-ordine (anticipata): Visita Radice → Figlio Sinistro → Figlio Destro.
+2. Simmetrica (In-order): Visita Figlio Sinistro → Radice → Figlio Destro. (Cruciale per i BST).
+3. Post-ordine (posticipata): Visita Figlio Sinistro → Figlio Destro → Radice.
+
+-> tutte le casistiche sono riportare a codice e analizzate opportunamente
+
+### [BFS](algoritmiDiVista.h) (Breadth-First Search - Visita in ampiezza): 
+- Visita tutti i nodi di una determinata profondità prima di scendere al livello successivo. Utilizza una struttura dati Queue (politica FIFO)
+
+
+

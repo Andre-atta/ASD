@@ -13,77 +13,91 @@ struct Node
     int val;
     Node* sx;
     Node* dx;
-    Node(int v) : val(v), sx(nullptr), dx(nullptr) {}
+    Node* p; // Puntatore al padre
+    Node(int v) : val(v), sx(nullptr), dx(nullptr), p(nullptr) {}
 };
 typedef Node* Pnode;
 
+
 class alberoBinario
 {
-    Pnode root;
+    struct Tree {
+        Node* root;
+        Tree(Node* r = nullptr) : root{r} {}
+    };
+    Tree tree;
 
-    static void deleteRec(Pnode n)
-    {
-        if (!n) return;
-        deleteRec(n->sx);
-        deleteRec(n->dx);
-        delete n;
+    void deleteTree(Pnode node) {
+        if (node == nullptr) return;
+        deleteTree(node->sx);
+        deleteTree(node->dx);
+        delete node;
     }
 
-    Pnode padreRec(Pnode curr, Pnode target) const
-    {
-        if (!curr) return nullptr; // O(1)
-        if (curr->sx == target || curr->dx == target) return curr;   // O(1)
+    Pnode copyTree(Pnode node) {
+        if (node == nullptr) return nullptr;
+        Node* newNode = new Node(node->val);
+        newNode->sx = copyTree(node->sx);
+        newNode->dx = copyTree(node->dx);
 
-        // ricorsione su sottoalbero sx
-        Pnode risultato = padreRec(curr->sx, target); // O(n)
-        if (risultato) return risultato; // O(1)
-
-        // ricorsione sottoalbero dx
-        return padreRec(curr->dx, target); // O(n)
+        if (newNode->sx) newNode->sx->p = newNode;
+        if (newNode->dx) newNode->dx->p = newNode;
+        return newNode;
     }
 
+    bool insertAtDepth(Pnode node, int val, int depth) {
+        if (!node) return false;
+
+        if (depth == 0) {
+            if (!node->sx) {
+                node->sx = new Node(val);
+                node->sx->p = node;
+                return true;
+            }
+            if (!node->dx) {
+                node->dx = new Node(val);
+                node->dx->p = node;
+                return true;
+            }
+            return false;
+        }
+
+        // Prima sinistra poi destra => riempimento sx -> dx
+        if (insertAtDepth(node->sx, val, depth - 1)) return true;
+        return insertAtDepth(node->dx, val, depth - 1);
+    }
 
 public:
-    // newtree () -> Tree
-    alberoBinario() : root(nullptr) {}
-    ~alberoBinario()
-    {
-        deleteRec(root);
+    alberoBinario() = default;
+
+    alberoBinario(int val) {
+        tree.root = new Node(val);
     }
 
-    /** COSTO OPERAIONE:
-     * * tempo costante, guardo sempre e solo un elemento
-     */
-    bool treeEmpty() const
-    {
-        return root == nullptr;
+    ~alberoBinario() {
+        deleteTree(tree.root);
+        tree.root = nullptr;
     }
 
-    /** COSTO OPERAIONE:
-     * * O(n)
-     */
-    Pnode padre(Pnode v) const
-    {
-        if (treeEmpty() || v == root) return nullptr;
-        return padreRec(root, v);
+    alberoBinario(const alberoBinario& other) {
+        tree.root = copyTree(other.tree.root);
     }
 
-    /** COSTO OPERAZIONE:
-     * * O(1) le operazioni sui vector sono costanti
-     */
-    vector<Pnode> figli (Pnode v)
-    {
-        vector<Pnode> listaFigli;
-        if (v->sx) listaFigli.push_back(v->sx);
-        if (v->dx) listaFigli.push_back(v->dx);
-
-        return listaFigli;
+    Pnode getRoot() const {
+        return tree.root;
     }
 
+    void insert(int val) {
+        if (!tree.root) {
+            tree.root = new Node(val);
+            return;
+        }
 
+        for (int d = 0; ; ++d)
+            if (insertAtDepth(tree.root, val, d)) return;
+
+    }
 };
-
-
 
 
 #endif //ASD_ALBERIBINARI_H
