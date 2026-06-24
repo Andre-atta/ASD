@@ -21,12 +21,14 @@ typedef Node* Pnode;
 
 class alberoBinario
 {
+protected:
     struct Tree {
         Node* root;
         Tree(Node* r = nullptr) : root{r} {}
     };
     Tree tree;
 
+private:
     void deleteTree(Pnode node) {
         if (node == nullptr) return;
         deleteTree(node->sx);
@@ -43,28 +45,6 @@ class alberoBinario
         if (newNode->sx) newNode->sx->p = newNode;
         if (newNode->dx) newNode->dx->p = newNode;
         return newNode;
-    }
-
-    bool insertAtDepth(Pnode node, int val, int depth) {
-        if (!node) return false;
-
-        if (depth == 0) {
-            if (!node->sx) {
-                node->sx = new Node(val);
-                node->sx->p = node;
-                return true;
-            }
-            if (!node->dx) {
-                node->dx = new Node(val);
-                node->dx->p = node;
-                return true;
-            }
-            return false;
-        }
-
-        // Prima sinistra poi destra => riempimento sx -> dx
-        if (insertAtDepth(node->sx, val, depth - 1)) return true;
-        return insertAtDepth(node->dx, val, depth - 1);
     }
 
 public:
@@ -87,15 +67,32 @@ public:
         return tree.root;
     }
 
-    void insert(int val) {
-        if (!tree.root) {
-            tree.root = new Node(val);
-            return;
+    Pnode insert(Pnode parent, int val, bool asLeft) {
+        if (!parent) {
+            if (!tree.root) {
+                tree.root = new Node(val);
+                return tree.root;
+            }
+            return nullptr;
         }
 
-        for (int d = 0; ; ++d)
-            if (insertAtDepth(tree.root, val, d)) return;
-
+        if (asLeft) {
+            if (!parent->sx) {
+                parent->sx = new Node(val);
+                parent->sx->p = parent;
+            } else {
+                parent->sx->val = val;
+            }
+            return parent->sx;
+        } else {
+            if (!parent->dx) {
+                parent->dx = new Node(val);
+                parent->dx->p = parent;
+            } else {
+                parent->dx->val = val;
+            }
+            return parent->dx;
+        }
     }
 };
 
